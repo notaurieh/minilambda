@@ -1,0 +1,44 @@
+# vim:ft=zsh ts=2 sw=2 sts=2
+setopt interactivecomments
+
+LAMBDA="%(?.%F{green}.%F{red})λ"
+USER="%(!.%F{red}.%F{yellow})%n"
+DIR="%F{white}%~"
+LASTEXIT="%(?.%F{white}.%F{red})%?"
+
+function prompt_minilambda_get_vcs {
+  if [[ $vcs_info_msg_0_ ]]; then
+    if test -n "$(git status --porcelain --ignore-submodules 2> /dev/null)"; then
+      echo "%F{yellow}$vcs_info_msg_0_ "
+    else
+      echo "%F{green}$vcs_info_msg_0_ "
+    fi
+  fi
+}
+
+function prompt_minilambda_get_rprompt {
+  # Uncomment this if you'd like to enable git sha display
+  # if git rev-parse --git-dir > /dev/null 2>&1; then
+  #   local sha
+  #   sha=$(git rev-parse --short HEAD 2> /dev/null)
+  #   echo -n "%F{blue}$sha%f; $LASTEXIT"
+  # else
+  #   echo -n "$LASTEXIT"
+  # fi
+  echo -n "$LASTEXIT"
+}
+
+function prompt_minilambda_precmd {
+  vcs_info
+  PROMPT="$LAMBDA $USER $DIR $(prompt_minilambda_get_vcs)%f"
+  RPROMPT="[$(prompt_minilambda_get_rprompt)%f]"
+}
+
+function prompt_minilambda_setup {
+  autoload -Uz add-zsh-hook
+  autoload -Uz vcs_info
+  zstyle ':vcs_info:git*' formats '%b'
+  add-zsh-hook precmd prompt_minilambda_precmd
+}
+
+prompt_minilambda_setup "$@"
